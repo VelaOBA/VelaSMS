@@ -1,0 +1,47 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "ng.com.vela.velasmsapp"
+        minSdkVersion 21
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        debug {
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            /*Define VelaSMS SDK Params here*/
+            buildConfigField('String', 'SMS_SHORT_CODE', "\"<SMS_SHORT_CODE_GOES_HERE>\"")
+            buildConfigField('String', 'SHARED_SERVICE_CODE', "\"<SHARED_SERVICE_CODE_GOES_HERE>\"")
+            buildConfigField("String", "ENCRYPTION_KEY", "\"<ENCRYPTION_KEY_GOES_HERE>\"")
+        }
+
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            /*Define VelaSMS SDK Params here*/
+            buildConfigField('String', 'SMS_SHORT_CODE', "\"<SMS_SHORT_CODE_GOES_HERE>\"")
+            buildConfigField('String', 'SHARED_SERVICE_CODE', "\"<SHARED_SERVICE_CODE_GOES_HERE>\"")
+            buildConfigField("String", "ENCRYPTION_KEY", "\"<ENCRYPTION_KEY_GOES_HERE>\"")
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'androidx.appcompat:appcompat:1.1.0-alpha01'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha2'
+    implementation 'com.google.android.material:material:1.1.0-alpha01'
+
+    implementation 'pub.devrel:easypermissions:2.0.0'
+    implementation 'org.bitbucket.vela_ng:vela_sms_sdk:0.0.2'
+    implementation "com.jakewharton.timber:timber:$versions.timber"
+
+    testImplementation 'junit:junit:4.12'
+
+    androidTestImplementation 'androidx.test:runner:1.1.1-beta01'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1-beta01'
+}
