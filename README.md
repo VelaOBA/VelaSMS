@@ -1,8 +1,6 @@
-# VelaOffline SDK
+# VelaSMS SDK
 
 [![](https://jitpack.io/v/org.bitbucket.vela_financial_services/velaobasdk.svg)](https://jitpack.io/#org.bitbucket.vela_financial_services/velaobasdk)
-
-Vela OBA Offline SDK enables you to carry out financial transactions and bill payments offline.
 
 ## Getting Started
 
@@ -10,7 +8,7 @@ Follow the instructions below to get started with `VelaOffline` SDK.
 
 ### Prerequisites
 
-Velaoffline SDK is in the private domain, to get access you need to request for `accessToken` and once you have that, add it to your `$HOME/.gradle/gradle.properties` for global access or project level gradle.properties file.
+VelaSMS SDK is in the private domain, to get access you need to request for `accessToken` and once you have that, add it to your `$HOME/.gradle/gradle.properties` for global access or project level `gradle.properties` file.
 
 ```
 accessToekn=jp_XXXXXXXXXXXXXXXXXXXXX
@@ -30,7 +28,7 @@ buildscript {
 
 ### Installing
 
-Follow the steps below to add velaOffline SDK to your project.
+Follow the steps below to add velaSMS SDK to your project.
 
 1. Add the JitPack repository to your your poject level `build.gradel` file if it is not added already.
 
@@ -53,249 +51,209 @@ Follow the steps below to add velaOffline SDK to your project.
     ```
     dependencies {
         ....
-        implementation 'org.bitbucket.vela_financial_services:velaobasdk: 0.0.17'
+        implementation 'org.bitbucket.vela_ng:vela_sms_sdk:<LATEST_VERSION>'
         ...
     }
+    
     ```
 3. Sync and build your project.
 
 
 ### Usage 
-Follow the instrcution below to configure Vela OBA Offline SDK once you have installed it.
+Follow the instrcution below to configure VelaSMS SDK once you have installed it.
+
+Add the following permission to your `manifest.xml` file.
+
+```xml
+ <!-- Used to get the phone IMEI -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    
+    <uses-permission android:name="android.permission.READ_SMS"/>
+    <uses-permission android:name="android.permission.SEND_SMS"/>
+    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+```
+
+> Note: You are responsible for requesting all the permissoins and making sure that your app has all the permissions granted before using the VelaSMS sdk.
+> See the sample app in the repository.
+
 
 #### Initialize
-For this step, you will need to set your `encryption key` and `Base UUSD code`
-In your Application onCreate() method, initialize the SDK as shown below:
+For this step, you will need to set your `SMS Sort Code`, `Shared Service Code` and `encryption key` In your Application onCreate() method, initialize the SDK as shown below:
 
 
 ```
-//Create the velaOffline config
-val velaOfflineConfig = VelaOfflineConfig.Builder()
-                .encryptionKey(BuildConfig.ENCRYPTION_KEY)
-                .baseServiceCode(BuildConfig.USSD_BASE_SERVICE)
-                .build()
-                
-VelaOffline.initWithDefaultConfig(this, velaOfflineConfig)
-
+//Init VelaSMS SDK
+VelaSMS.init(
+             this,
+             BuildConfig.SMS_SHORT_CODE,
+             BuildConfig.SHARED_SERVICE_CODE,
+             BuildConfig.ENCRYPTION_KEY
+        );
 ```
 
-#### Activity Usage
-For you to be able to carry out `USSD` processing in an `Activity` either as a standalone Activity or an Activity that hosts a `Fragment`, you need to extend the `USSDActivity` as shown below:
+#### Usage
+You can use VelaSMS SDK from an `Activit.
 
-##### Java
+##### Subscribe to Event:
+VelaSMSReceiver implement an event bus using `LiveData` that can be observed by any Lifecycle owner as show below:
 
-```java
-public class BaseActivity extends USSDActivity{
-.../
-}
-```
-##### Kotlin
 
-```Kolin
-class BaseActivity : USSDActivity()
-
-```
-
-#### Fragment Usage
-Like for Activity, to carry out `USSD` processing in a `Fragment ` or `DialogFragment` you need to extend the `USSDFragment` or `USSDDialogFrament` accordingly and override the necessary methods.
-
-#### Fragment
-Java
-
-```Java
-public class MyFragment extends USSDFragment()
-
-```
-Kotlin
-
-```Kotlin
-class MyFragment : USSDFragment()
-
-```
-
-####DialogFragment
+> The response is astring containing the status code and the pyalod delimtted by a special character `VelaSMSConstants.VELA_DELIMITERS`
 
 Java
 
 ```Java
-public class MyDialogFragment extends USSDDialogFragment()
-
-```
-Kotlin
-
-```Kotlin
-class MyDialogFragment : USSDDialogFragment()
-
-```
- 
-
-End with an example of getting some data out of the system or using it for a little demo
-
-## Invoking dialUSSD() function
-From the USSDActivity(),Fragment() or DialogFragment() that was extended from above, you can invoke the `dialUSSD(String:ussdCode,String:key)`.
-
-`ussdCode: The ussdCode that you wish to run.`
-
-`key: Any random string that is used to retrieve the response from the USSDService.`
-
-> Note: For the `key: String`, it can be any string, this same string is mapped to the response when it is returned. So you have to persist the key as a variable of a constant where you can easily access it and check it against the response from the USSDService.
-
-
-## Retrieving Result from USSDResponse
-Once you invoke the dialUSSD() function, the VelaOfffline SDK module is responsible for making the USSD request, retrieving, decrypting and parsing the response and finally broadcasting the response object to all listeners.
-
-To receive a response from USSD request, you need the key you passed on to the dialUSSD() function. This is to ensure that you are only listening to responses from requests that you initialised.
-
-The `OverlayService` exposes a static constant of type `LiveDate<USSDEvent>` called `USSDEvent` that you can observe from any LifecyleOwner and get notified accordingly of any USSD event.
-
-The USSDEvent class is shown below: 
-
-```Kotlin
-data class USSDEvent(val content: String, val key: String)
-
-```
-```Java
-OverlayService.getUSSDEvent().observe(this, new Observer<Event<USSDEvent>>() {
+//call vela sms receiver
+        VelaSMSReceiver.getSMSEvent().observe(this, new Observer<SSOEvent>() {
             @Override
-            public void onChanged(Event<USSDEvent> event) {
-                final String key = event.peekContent().getKey();
-                switch (key) {
-                    case `MY_UNIQUE_KEY`:
-                    final USSDEvent myEvent = event.getContentIfNotHandled();
-                    processUSSDResponse(myEvent);
-                    break;
+            public void onChanged(SSOEvent ssoEvent) {
+                Timber.d("SSO Event: %s", ssoEvent);
+                final String[] parts = ssoEvent.getData().split(VelaSMSConstants.VELA_DELIMITERS);
+                final String status = parts[0];
+
+                switch (status) {
+                    case VelaSMSConstants.RESPONSE_SUCCESS: {
+                        //Use the actual response here.
+                        Timber.d("Success Response: %s", parts[1]);
+                    }
+                    case VelaSMSConstants.RESPONSE_ERROR_CLIENT_APP_ID: {
+                        Timber.d("Error: Invalid Client App Id: %s", parts[1]);
+                    }
+                    case VelaSMSConstants.RESPONSE_ERROR_INVALID_MERCHANT_RESPONSE: {
+                        Timber.d("Error: Due to merchant Response: %s", parts[1]);
+                    }
+                    case VelaSMSConstants.RESPONSE_ERROR: {
+                        Timber.d("Unknown Error occurred: %s", parts[1]);
+                    }
                 }
-
-
-            }
-        });
-``` 
-
+```
+Kotlin
 
 ```Kotlin
-OverlayService.USSDEvent.observe(this, Observer { event ->
-            Timber.d("OnUSSDEvent: $event")
-            val key = event.peekContent().key
-            when (key) {
-                `MY_UNIQUE_KEY` -> event.getContentIfNotHandled()?.let {
-                    processUSSDResponse(it)
+VelaSMSReceiver.SMSEvent.observe(this, Observer {
+            Timber.d("SMS Event: $it")
+            val parts = it.data.split(VelaSMSConstants.VELA_DELIMITERS)
+            when (parts[0]) {
+                VelaSMSConstants.RESPONSE_SUCCESS -> {
+                    if (it.isForEncryption.not()) {
+                        val sharedPref = PreferenceManager.getDefaultSharedPreferences(this)
+                        val encryptionKey = sharedPref.getString(VelaSMSConstants.PREF_KEY_ENCRYPTION_KEY, "")!!
+
+                        Timber.d("Using Encryption Key: $encryptionKey")
+
+                        val encryption = SecurityUtils.getInstance(encryptionKey)
+
+                        resultTv.text = "Result: ${encryption.decrypt(parts[1].trim())}"
+                    } else {
+                        resultTv.text = "Result: ${parts[1]}"
+                    }
+
+                }
+                VelaSMSConstants.RESPONSE_ERROR_CLIENT_APP_ID -> {
+                    Timber.d("Error: Invalid Client App Id: ${parts[1]}")
+                }
+                VelaSMSConstants.RESPONSE_ERROR_INVALID_MERCHANT_RESPONSE -> {
+                    Timber.d("Error: Due to merchant Response: ${parts[1]}")
+                }
+                VelaSMSConstants.RESPONSE_ERROR -> {
+                    Timber.d("Unknown Error occurred: ${parts[1]}")
                 }
             }
-
+            hideProgress()
         })
 ```
-
-
-> Note:  You need to use `peekContent()` to ensure that your interaction with this event does not affect other observers.
-
-Once you verify that the particular USSD response is the response you are interested in by using `peekContent()` and then checking the unique key against the saved key, you can proceed and invoke the `processUSSDResponse(USSDEvent:ussdEvent)`. This function will decrypt, and pass the USSDRespone and invoke the following functions accordingly based on the outcome of the processing:
-
-```Java
-
-@Override
-public void onUSSDSuccess(@NotNull String key, @NotNull USSDResponse response) {}
-
-@Override
-public void onUSSDError(@Nullable String errorMsg) {}
-
-@Override
-public void onUSSDInformation(@NotNull String key, @NotNull USSDResponse response) {}
-
-@Override
-public void toggleButtonState(boolean enable) {}
-
-@Override
-public void toggleMessageView(boolean show, @Nullable String message, boolean isError) {}
-
-```
-```Kotlin
-override fun onUSSDSuccess(key: String, response: USSDResponse) {}
-
-override fun onUSSDError(errorMsg: String?) {}
-
-override fun onUSSDInformation(key: String, response: USSDResponse) {}
-
-override fun toggleButtonState(enable: Boolean) {}
-
-override fun toggleMessageView(show: Boolean, message: String?, isError: Boolean) {}
-```
-
-### Method / Functions BreakDown
-
-Here we describe what each function does.
-
-1. #### onUssdSuccess()
-
-    This is invoked when the `processUSSDResponse(it)` is finished and everything went fine as expected. It returns the unique `key:String` that was passed during the call to `dialUssd()` function and the `USSDREsponse` object. The `USSDRespone` object is most likely going to be different depending on the expected response from the client API service.
-    
-2. #### onUssdError(errorMessage:String?)
-
-    This is invoked after the `processUSSDResponse(it)` is finished and an error occurred during the serialization or error returned from the server after deserialization so that you can display the appropriate error message to the user and invoke the next possible action due to the error. It returns a during which is nullable depending on whether the error from the server was successfully captured or not.
-
-3. #### onUssdInformation(key:String, ussdResponse: UssdResonse)
-
-    This is invoked after the `processUssdResposnse(it)` is finished and an information is required to be shown to the user for a successful transaction or for guidance to the next process. It returns the unique `key:String`that was passed during the invocation of `dialUssd(code: String, key: String)` and the `UssdResponse` object.
-
-4. #### toggleButtonState(enable:Boolea)
-
-    This is invoked when the USSD starts to dial and when it finishes, You can enable or disable UI interactions depending on the `enable: Boolean` state to avoid users hitting the dial USSD button twice.
-
-5. #### toggleMessageView(show: Boolean, message: String?, isError: Boolean)
-
-    This method is invoked specifically for UI interaction. It is used to show user `error `, `success ` or `process ` message.
-    
-## USSD String Builder
-
-To build a USSD string, you can use the internal `UssdRequest.Builder()` `buildUpon()`  method as follows:
+###### Send Message (Payload)
+To send your payload using the sdk, simple call ` VelaSMS.send(Activty, samplePayload);`
+Example:
 
 Java
 
-```Java
-final String fundTRransferUssdCode = new USSDRequest.Builder(Ussd.FUND_TRANSFER_NEW())
-                .buildUpon("userId")
-                .buildUpon("userPIN")
-                .buildUpon("bankAccountId")
-                .buildUpon("amount")
-                .buildUpon("destAccountNum")
-                .buildUpon("destBankCode")
-                .buildUpon("saveAsBeneficiary")
-                .build();
-        Timber.d("UssdString: $fundTRransferUssdCode");
-        dialUSSD(fundTRransferUssdCode, Ussd.FUND_TRANSFER_NEW());
 ```
-Kotlin
+@AfterPermissionGranted(RC_VELA_SMS)
+    private void sendSMS() {
+        final String samplePayload = "1:20:181702773757!48000000:08060000000:NG:t3stt3st:352085099972999";
 
-```Kotlin
-val fundTRransferUssdCode = USSDRequest.Builder(Ussd.FUND_TRANSFER_NEW)
-                .buildUpon("userId")
-                .buildUpon("userPIN")
-                .buildUpon("bankAccountId")
-                .buildUpon("amount")
-                .buildUpon("destAccountNum")
-                .buildUpon("destBankCode")
-                .buildUpon("saveAsBeneficiary")
-                .build()
-        Timber.d("UssdString: $fundTRransferUssdCode")
-        dialUSSD(fundTRransferUssdCode, Ussd.FUND_TRANSFER_NEW)
+        //send sms
+        VelaSMS.send(this, samplePayload);
+
+    }
 ```
+
+Kotlin:
+
+```
+@SuppressLint("MissingPermission")
+    @AfterPermissionGranted(RC_VELA_SMS)
+    private fun sendTestSMS() {
+        val sampleUSSDLoginRequestOnVelaBank = "0:2*0*08189762414*674342479273842*116051115116116051115116*0"
+       
+       //send sms
+       VelaSMS.send(this@MainActivity, sampleSMSLoginRequestOnVelaBank)
+    }
+```
+
+##### Observe Progress
+If you wish to observer the SMS progress event, then you need to implement `VelaSMSEvent` and overide the neccessary methods. See the sample app for example usage.
+
+```
+@Override
+    public void hideProgress() {
+        progressWrapper.setVisibility(View.GONE);
+        progresShowing = false;
+
+    }
+
+    @Override
+    public void showError(@NotNull String s) {
+        Toast.makeText(this, "An Error occurred: $s", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void showProgress() {
+        progressWrapper.setVisibility(View.VISIBLE);
+        progresShowing = true;
+    }
+
+    @Override
+    public void updateProgress(@NotNull String s) {
+        progressUpdateTv.setText(s);
+
+    }
+```
+
+In your Activity's onCreate(), add the Activity implementation to the event observer as shown below:
+
+``` 
+//add this as an Observer
+VelaSMS.addEventObserver(this);
+
+```
+
+In your Activities onResume(), register the broadcast receivers as shown below:
+
+```
+@Override
+    protected void onResume() {
+        super.onResume();
+        //register receivers.
+        VelaSMS.registerObservers(this);
+
+    }
+```
+
+Also in your Activities OnPause(), unregister the broadcaset receivers as shown below:
+
+```
+@Override
+    protected void onPause() {
+        super.onPause();
+        //unregister all the receivers
+        VelaSMS.unregisterObservers(this);
+
+    }
+```
+
 
 ## Versioning
 
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
-
-<!--## Authors
-
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
--->
-<!--## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
--->
-<!--## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
--->
