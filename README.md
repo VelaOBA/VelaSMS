@@ -11,7 +11,7 @@ Follow the instructions below to get started with `VelaOffline` SDK.
 VelaSMS SDK is in the private domain, to get access you need to request for `accessToken` and once you have that, add it to your `$HOME/.gradle/gradle.properties` for global access or project level `gradle.properties` file.
 
 ```
-accessToekn=jp_XXXXXXXXXXXXXXXXXXXXX
+accessToken=jp_XXXXXXXXXXXXXXXXXXXXX
 
 ```
 Alternatively, you can define it in the `build.gradle` file (app/build.gradle) before using it.
@@ -24,7 +24,7 @@ def accessToken = "jp_XXXXXXXXXXXXXXXXXXXXXXXX"
 buildscript {
  ...
 ```
-> We would make use of the `accessToken ` below.
+> We would make use of the `accessToken` below.
 
 ### Installing
 
@@ -73,12 +73,12 @@ Add the following permission to your `manifest.xml` file.
     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
 ```
 
-> Note: You are responsible for requesting all the permissoins and making sure that your app has all the permissions granted before using the VelaSMS sdk.
+> Note: You are responsible for requesting all the permissions and making sure that your app has all the permissions granted before using the VelaSMS sdk.
 > See the sample app in the repository.
 
 
 #### Initialize
-For this step, you will need to set your `SMS Sort Code`, `Shared Service Code` and `encryption key` In your Application onCreate() method, initialize the SDK as shown below:
+For this step, you will need to set your `SMS Sort Code`, `Shared Service Code` and `encryption key` In your Application `onCreate()` method, initialize the SDK as shown below:
 
 
 ```
@@ -92,7 +92,7 @@ VelaSMS.init(
 ```
 
 #### Usage
-You can use VelaSMS SDK from an `Activit.
+You can use VelaSMS SDK from an `Activity`.
 
 ##### Subscribe to Event:
 VelaSMSReceiver implement an event bus using `LiveData` that can be observed by any Lifecycle owner as show below:
@@ -221,7 +221,7 @@ If you wish to observer the SMS progress event, then you need to implement `Vela
     }
 ```
 
-In your Activity's onCreate(), add the Activity implementation to the event observer as shown below:
+In your Activity's `onCreate()`, add the Activity implementation to the event observer as shown below:
 
 ``` 
 //add this as an Observer
@@ -229,7 +229,7 @@ VelaSMS.addEventObserver(this);
 
 ```
 
-In your Activities onResume(), register the broadcast receivers as shown below:
+In your Activity's `onResume()`, register the broadcast receivers as shown below:
 
 ```
 @Override
@@ -241,7 +241,7 @@ In your Activities onResume(), register the broadcast receivers as shown below:
     }
 ```
 
-Also in your Activities OnPause(), unregister the broadcaset receivers as shown below:
+Also in your Activity's `OnPause()`, unregister the broadcaset receivers as shown below:
 
 ```
 @Override
