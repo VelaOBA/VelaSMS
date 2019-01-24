@@ -1,6 +1,7 @@
 # VelaSMS SDK
 
-[![](https://jitpack.io/v/org.bitbucket.vela_financial_services/velaobasdk.svg)](https://jitpack.io/#org.bitbucket.vela_financial_services/velaobasdk)
+[![](https://jitpack.io/v/vela-ng/vela-sms-sdk.svg)](https://jitpack.io/#vela-ng/vela-sms-sdk)
+
 
 ## Getting Started
 
@@ -51,7 +52,7 @@ Follow the steps below to add velaSMS SDK to your project.
     ```
     dependencies {
         ....
-        implementation 'org.bitbucket.vela_ng:vela_sms_sdk:<LATEST_VERSION>'
+        implementation 'com.github.vela-ng:vela-sms-sdk:0.0.2'
         ...
     }
     
