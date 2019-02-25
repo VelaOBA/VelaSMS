@@ -28,10 +28,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements VelaSMSEvent, EasyPermissions.PermissionCallbacks {
+public class MainActivityJava extends AppCompatActivity implements VelaSMSEvent, EasyPermissions.PermissionCallbacks {
 
 
     private final int RC_VELA_SMS = 0211;
+
     private Button testSmsButton;
     private ProgressBar progressBar;
     private TextView progressUpdateTv;
@@ -91,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements VelaSMSEvent, Eas
         testSmsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (EasyPermissions.hasPermissions(MainActivity.this, perms)) {
+                if (EasyPermissions.hasPermissions(MainActivityJava.this, perms)) {
                     sendSMS();
                 } else {
                     requestPermissions();

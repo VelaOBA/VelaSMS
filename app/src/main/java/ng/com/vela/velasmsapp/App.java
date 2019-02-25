@@ -17,8 +17,7 @@ public class App extends Application {
         VelaSMS.init(
                 this,
                 BuildConfig.SMS_SHORT_CODE,
-                BuildConfig.SHARED_SERVICE_CODE,
-                BuildConfig.ENCRYPTION_KEY
+                BuildConfig.SHARED_SERVICE_CODE
         );
     }
 }
