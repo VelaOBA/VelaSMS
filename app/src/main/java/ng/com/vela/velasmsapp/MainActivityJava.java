@@ -9,6 +9,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.Observer;
 import ng.com.vela.velasms.VelaSMS;
 import ng.com.vela.velasms.VelaSMSReceiver;
+import ng.com.vela.velasms.encryption.SecurityUtils;
 import ng.com.vela.velasms.interfaces.VelaSMSEvent;
 import ng.com.vela.velasms.model.SSOEvent;
 import ng.com.vela.velasms.utils.VelaSMSConstants;
@@ -74,6 +75,17 @@ public class MainActivityJava extends AppCompatActivity implements VelaSMSEvent,
                     case VelaSMSConstants.RESPONSE_SUCCESS: {
                         //Use the actual response here.
                         Timber.d("Success Response: %s", parts[1]);
+
+                        final String encryptionKey = VelaSMS.INSTANCE.getEncryptionKey(MainActivityJava.this);
+                        Timber.d("Using Encryption key: %s", encryptionKey);
+
+                        try {
+                            final SecurityUtils encryption = SecurityUtils.Companion.getInstance(encryptionKey);
+                            final String decryptedResult = encryption.decrypt(parts[1].trim());
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                     case VelaSMSConstants.RESPONSE_ERROR_CLIENT_APP_ID: {
                         Timber.d("Error: Invalid Client App Id: %s", parts[1]);

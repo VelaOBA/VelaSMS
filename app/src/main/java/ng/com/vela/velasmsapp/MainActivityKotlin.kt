@@ -13,6 +13,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.Observer
 import ng.com.vela.velasms.VelaSMS
 import ng.com.vela.velasms.VelaSMSReceiver
+import ng.com.vela.velasms.encryption.SecurityUtils
 import ng.com.vela.velasms.interfaces.VelaSMSEvent
 import ng.com.vela.velasms.model.SSOEvent
 import ng.com.vela.velasms.utils.VelaSMSConstants
@@ -60,6 +61,13 @@ class MainActivityKotlin : AppCompatActivity(), VelaSMSEvent, EasyPermissions.Pe
                         run {
                             //Use the actual response here.
                             Timber.d("Success Response: %s", parts[1])
+
+                            val encryptionKey = VelaSMS.getEncryptionKey(this@MainActivityKotlin)
+                            Timber.d("Using Encryption Key: $encryptionKey")
+                            val encryption = SecurityUtils.getInstance(encryptionKey)
+
+                            val decrypted = encryption.decrypt(parts[1].trim())
+                            val result = "Result: $decrypted"
                         }
                         run { Timber.d("Error: Invalid Client App Id: %s", parts[1]) }
                         run { Timber.d("Error: Due to merchant Response: %s", parts[1]) }

@@ -52,7 +52,7 @@ Follow the steps below to add velaSMS SDK to your project.
     ```
     dependencies {
         ....
-        implementation 'com.github.vela-ng:vela-sms-sdk:0.0.2'
+        implementation 'com.github.vela-ng:vela-sms-sdk:0.0.3'
         ...
     }
     
@@ -87,8 +87,7 @@ For this step, you will need to set your `SMS Sort Code`, `Shared Service Code` 
 VelaSMS.init(
              this,
              BuildConfig.SMS_SHORT_CODE,
-             BuildConfig.SHARED_SERVICE_CODE,
-             BuildConfig.ENCRYPTION_KEY
+             BuildConfig.SHARED_SERVICE_CODE
         );
 ```
 
@@ -116,6 +115,16 @@ Java
                     case VelaSMSConstants.RESPONSE_SUCCESS: {
                         //Use the actual response here.
                         Timber.d("Success Response: %s", parts[1]);
+                        final String encryptionKey = VelaSMS.INSTANCE.getEncryptionKey(MainActivityJava.this);
+                        Timber.d("Using Encryption key: %s", encryptionKey);
+
+                        try {
+                            final SecurityUtils encryption = SecurityUtils.Companion.getInstance(encryptionKey);
+                            final String decryptedResult = encryption.decrypt(parts[1].trim());
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                     case VelaSMSConstants.RESPONSE_ERROR_CLIENT_APP_ID: {
                         Timber.d("Error: Invalid Client App Id: %s", parts[1]);
@@ -137,9 +146,7 @@ VelaSMSReceiver.SMSEvent.observe(this, Observer {
             when (parts[0]) {
                 VelaSMSConstants.RESPONSE_SUCCESS -> {
                     if (it.isForEncryption.not()) {
-                        val sharedPref = PreferenceManager.getDefaultSharedPreferences(this)
-                        val encryptionKey = sharedPref.getString(VelaSMSConstants.PREF_KEY_ENCRYPTION_KEY, "")!!
-
+                   		val encryptionKey = VelaSMS.getEncryptionKey(this)
                         Timber.d("Using Encryption Key: $encryptionKey")
 
                         val encryption = SecurityUtils.getInstance(encryptionKey)
