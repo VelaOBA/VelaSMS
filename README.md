@@ -52,7 +52,7 @@ Follow the steps below to add velaSMS SDK to your project.
     ```
     dependencies {
         ....
-        implementation 'com.github.vela-ng:vela-sms-sdk:0.0.3'
+        implementation 'com.github.vela-ng:vela-sms-sdk:0.0.10'
         ...
     }
     
@@ -201,41 +201,28 @@ Kotlin:
 ```
 
 ##### Observe Progress
-If you wish to observer the SMS progress event, then you need to implement `VelaSMSEvent` and overide the neccessary methods. See the sample app for example usage.
+If you wish to observer the SMS progress event, then you can observer the individual Livedata events as show below:
 
 ```
-@Override
-    public void hideProgress() {
-        progressWrapper.setVisibility(View.GONE);
-        progresShowing = false;
+		VelaSMS.progressUpdateEvent.observe(this, Observer { uiEvent ->
+            uiEvent.getContentIfNotHandled()?.let {
+                updateProgress(it)
+            }
+        })
 
-    }
+        VelaSMS.progressEvent.observe(this, Observer { uiEvent ->
+            uiEvent.getContentIfNotHandled()?.let {
+                if (it) showProgress() else hideProgress()
+            }
+        })
 
-    @Override
-    public void showError(@NotNull String s) {
-        Toast.makeText(this, "An Error occurred: $s", Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public void showProgress() {
-        progressWrapper.setVisibility(View.VISIBLE);
-        progresShowing = true;
-    }
-
-    @Override
-    public void updateProgress(@NotNull String s) {
-        progressUpdateTv.setText(s);
-
-    }
-```
-
-In your Activity's `onCreate()`, add the Activity implementation to the event observer as shown below:
-
-``` 
-//add this as an Observer
-VelaSMS.addEventObserver(this);
-
-```
+        VelaSMS.errorEvent.observe(this, Observer { uiEvent ->
+            uiEvent.getContentIfNotHandled()?.let {
+                showError(it)
+            }
+        })
+        
+ ```
 
 In your Activity's `onResume()`, register the broadcast receivers as shown below:
 
